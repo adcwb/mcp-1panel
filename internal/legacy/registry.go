@@ -28,6 +28,7 @@ func RegisterTools(server *mcp.Server, allowed func(string) bool, client *Client
 			description = strings.ReplaceAll(description, "installed local MySQL", "recorded local MySQL")
 		}
 		server.AddTool(&mcp.Tool{
+			Meta:         shared.ToolMetadata(spec.Definition),
 			Name:         spec.Definition.Name,
 			Description:  description,
 			InputSchema:  spec.Definition.InputSchema,

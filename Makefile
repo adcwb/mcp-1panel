@@ -51,3 +51,11 @@ docker_save:
 
 docker_test:
 	python3 "$(BASE_PATH)/scripts/test-docker-image.py"
+
+# Regenerate/check the pinned Swagger inventory without contacting a panel.
+generate_api:
+	python3 "$(BASE_PATH)/scripts/generate-api-tools.py"
+
+check_api:
+	python3 "$(BASE_PATH)/scripts/generate-api-tools.py" --check
+	python3 "$(BASE_PATH)/scripts/test-api-catalog.py"

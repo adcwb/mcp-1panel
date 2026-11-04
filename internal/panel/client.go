@@ -259,8 +259,16 @@ func (c *Client) request(ctx context.Context, token, method, path string, payloa
 		return &RuntimeError{Code: "MCP_NODE_UNAVAILABLE", Message: "Cannot connect to the 1Panel MCP runtime", HTTPStatus: http.StatusServiceUnavailable}
 	}
 	defer resp.Body.Close()
-	encoded, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseSize+1))
-	if err != nil || len(encoded) > maxResponseSize {
+	limit := maxResponseSize
+	if method == http.MethodGet && path == runtimePrefix+"/tools" {
+		limit = 32 << 20 // Full schema catalog, not a business operation response.
+	} else if invocation, ok := payload.(Invocation); ok {
+		if spec, found := lookupTool(invocation.ToolID); found && shared.IsEndpointTool(spec.definition) {
+			limit = shared.MaxAPIResponseBytes + (64 << 10)
+		}
+	}
+	encoded, err := io.ReadAll(io.LimitReader(resp.Body, int64(limit)+1))
+	if err != nil || len(encoded) > limit {
 		return contractError("Invalid Core MCP response")
 	}
 	if resp.StatusCode != http.StatusOK && !(result == nil && resp.StatusCode == http.StatusNoContent) {

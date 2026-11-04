@@ -22,6 +22,12 @@ func WriteAPI(ctx context.Context, transport APITransport, path string, body any
 	if err == nil {
 		return data, nil
 	}
+	return nil, WriteFailure(err)
+}
+
+// WriteFailure preserves explicit denials and audit IDs while marking transport
+// or contract failures after submission as uncertain. It never retries a write.
+func WriteFailure(err error) error {
 	var execution *ExecutionError
 	if errors.As(err, &execution) {
 		switch execution.Code {
@@ -31,12 +37,12 @@ func WriteAPI(ctx context.Context, transport APITransport, path string, body any
 				failure.Message = execution.Message
 			}
 			failure.InvocationID = execution.InvocationID
-			return nil, failure
+			return failure
 		default:
-			return nil, err
+			return err
 		}
 	}
-	return nil, UnknownWriteResult()
+	return UnknownWriteResult()
 }
 
 func InvalidArguments() error {
@@ -94,6 +100,14 @@ func StringArg(args map[string]any, key, def string) string {
 	return def
 }
 func NumberArg(args map[string]any, key string, def int) int {
+	if value, ok := args[key].(json.Number); ok {
+		if number, err := value.Int64(); err == nil && int64(int(number)) == number {
+			return int(number)
+		}
+		if number, err := value.Float64(); err == nil && float64(int(number)) == number {
+			return int(number)
+		}
+	}
 	if value, ok := args[key].(float64); ok {
 		return int(value)
 	}

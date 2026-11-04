@@ -29,7 +29,7 @@ func Array(items Schema, min, max int) Schema {
 }
 func Raw(v any) json.RawMessage { b, _ := json.Marshal(v); return b }
 func NewOperation(id, method, path string, body Schema, fields ...string) Operation {
-	return Operation{id, method, "/api/v2" + path, body, fields}
+	return Operation{ID: id, Method: method, Path: "/api/v2" + path, BodySchema: body, ResponseFields: fields}
 }
 
 func Empty() Schema { return Object(Schema{}) }

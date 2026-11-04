@@ -1,5 +1,13 @@
 package shared
 
+// ToolMetadata exposes the same category in MCP tools/list and the offline
+// manifest. Categories describe tools; they never confer access permissions.
+func ToolMetadata(tool ToolDefinition) map[string]any {
+	return map[string]any{"1panel/category": map[string]any{
+		"id": tool.CategoryID, "name": tool.CategoryName, "order": tool.CategoryOrder,
+	}}
+}
+
 // The API embeds the complete certificate model. Decode only the fields that
 // may leave the panel, even when a transport has not applied its projection.
 type SSLMetadata struct {

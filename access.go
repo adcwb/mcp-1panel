@@ -22,7 +22,7 @@ var minimumToolAccess = func() map[string]AccessLevel {
 		if spec.Definition.ReadOnly {
 			level = AccessReadOnly
 		}
-		if spec.Definition.ToolID == "install_mysql" || spec.Definition.ToolID == "install_openresty" {
+		if spec.Definition.Risk == "privileged" || spec.Definition.ToolID == "install_mysql" || spec.Definition.ToolID == "install_openresty" {
 			level = AccessFull
 		}
 		result[spec.Definition.ToolID] = level

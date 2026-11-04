@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/1Panel-dev/mcp-1panel/internal/toolset"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -69,6 +70,13 @@ func TestToolAccessAndMetadata(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.level.String(), func(t *testing.T) {
+			if test.level == AccessFull {
+				for _, spec := range toolset.All() {
+					if spec.Definition.Risk == "privileged" {
+						test.want = append(test.want, spec.Definition.Name)
+					}
+				}
+			}
 			tools := listTools(t, test.level)
 			got := make([]string, 0, len(tools))
 			for _, tool := range tools {
@@ -78,6 +86,9 @@ func TestToolAccessAndMetadata(t *testing.T) {
 				}
 				if tool.Annotations == nil {
 					t.Fatalf("tool %s is missing annotations", tool.Name)
+				}
+				if tool.Meta["1panel/category"] == nil {
+					t.Fatalf("tool %s is missing category metadata", tool.Name)
 				}
 				required := minimumToolAccess[tool.Name]
 				if (required == AccessReadOnly) != tool.Annotations.ReadOnlyHint {
@@ -137,9 +148,17 @@ func listTools(t *testing.T, access AccessLevel) []*mcp.Tool {
 	}
 	defer clientSession.Close()
 
-	result, err := clientSession.ListTools(ctx, nil)
-	if err != nil {
-		t.Fatal(err)
+	var tools []*mcp.Tool
+	params := &mcp.ListToolsParams{}
+	for {
+		result, err := clientSession.ListTools(ctx, params)
+		if err != nil {
+			t.Fatal(err)
+		}
+		tools = append(tools, result.Tools...)
+		if result.NextCursor == "" {
+			return tools
+		}
+		params.Cursor = result.NextCursor
 	}
-	return result.Tools
 }

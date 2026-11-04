@@ -3,8 +3,10 @@
 package shared
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 )
 
 const ContractVersion = 5
@@ -14,11 +16,12 @@ const ContractVersion = 5
 const ToolPolicyVersion = 4
 
 type Operation struct {
-	ID             string         `json:"id"`
-	Method         string         `json:"method"`
-	Path           string         `json:"path"`
-	BodySchema     map[string]any `json:"bodySchema"`
-	ResponseFields []string       `json:"responseFields"`
+	ID             string              `json:"id"`
+	Method         string              `json:"method"`
+	Path           string              `json:"path"`
+	BodySchema     map[string]any      `json:"bodySchema"`
+	ResponseFields []string            `json:"responseFields"`
+	Transport      *OperationTransport `json:"transport,omitempty"`
 }
 type ToolDefinition struct {
 	ToolID        string          `json:"toolId"`
@@ -102,11 +105,28 @@ func (s ToolSpec) TargetNode(arguments json.RawMessage) (string, error) {
 func (s ToolSpec) decodeArguments(arguments json.RawMessage) (map[string]any, error) {
 	var args map[string]any
 	var input Schema
-	if json.Unmarshal(arguments, &args) != nil || json.Unmarshal(s.Definition.InputSchema, &input) != nil {
+	decoder := json.NewDecoder(bytes.NewReader(arguments))
+	if IsEndpointTool(s.Definition) {
+		// Preserve uint64 IDs and file offsets through validation and forwarding.
+		decoder.UseNumber()
+	}
+	if decoder.Decode(&args) != nil || args == nil || json.Unmarshal(s.Definition.InputSchema, &input) != nil {
 		return nil, InvalidArguments()
 	}
-	if err := validateValueAt(input, args, "arguments"); err != nil {
+	if decoder.Decode(new(any)) != io.EOF {
+		return nil, InvalidArguments()
+	}
+	var err error
+	if IsEndpointTool(s.Definition) {
+		err = ValidateEndpointSchema(input, args)
+	} else {
+		err = validateValueAt(input, args, "arguments")
+	}
+	if err != nil {
 		return nil, err
+	}
+	if IsEndpointTool(s.Definition) {
+		canonicalEndpointNumbers(args)
 	}
 	return args, nil
 }

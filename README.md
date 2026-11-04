@@ -2,9 +2,14 @@
 
 [English](README.md) | [简体中文](docs/README.zh-Hans.md)
 
-An MCP server for 1Panel v2, with 20 shared tools for nodes, system status,
-websites, certificates, applications and MySQL. Independent mode uses the
+An MCP server for 1Panel v2, with 770 API tools across 58 Swagger categories and
+20 compatible convenience tools. Independent mode uses the
 official Go MCP SDK; managed mode integrates with 1Panel's authorization and audit.
+
+The complete API tools require `--access-level=full`. See the
+[API inventory](docs/api-coverage.md) and [parameters, transfers and managed compatibility](docs/api-tools.md).
+Managed execution of these new tools requires endpoint-v1 support in Core/Agent;
+this repository contains the adapter, not those upstream implementations.
 
 ## Choose a mode
 
@@ -157,7 +162,7 @@ uses Core grants instead of this option.
 | --- | --- |
 | `readonly` | 15 query, list and status tools |
 | `readwrite` | 18 tools, adding website, certificate and database creation |
-| `full` | All 20, adding MySQL and OpenResty installation |
+| `full` | 790 tools: 20 convenience tools plus all 770 API tools |
 
 | Tool | Minimum level | Purpose |
 | --- | --- | --- |
@@ -187,7 +192,7 @@ its query classification does not promise zero server writes. Managed mode reads
 
 ## Nodes and write outcomes
 
-The 19 business tools accept optional `nodeId`, defaulting to `"local"`. Call
+Business tools accept optional `nodeId`, defaulting to `"local"`. Call
 `list_nodes` with `{}` for child IDs such as `"7"`, then pass the ID to a business
 tool. Names and IPs are not node selectors. Independent mode resolves ID to current
 name per call and routes through `CurrentNode`; local calls need no discovery.

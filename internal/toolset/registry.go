@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/1Panel-dev/mcp-1panel/internal/toolset/app"
+	"github.com/1Panel-dev/mcp-1panel/internal/toolset/catalog"
 	"github.com/1Panel-dev/mcp-1panel/internal/toolset/certificate"
 	"github.com/1Panel-dev/mcp-1panel/internal/toolset/database"
 	"github.com/1Panel-dev/mcp-1panel/internal/toolset/shared"
@@ -58,7 +59,7 @@ func newRegistry(groups ...[]shared.ToolSpec) (*registry, error) {
 // All construction and validation happen once, before requests are accepted.
 // A failure here is a programming error in the compiled-in tool modules.
 var builtin = func() *registry {
-	r, err := newRegistry(system.Tools(), website.Tools(), certificate.Tools(), app.Tools(), database.Tools())
+	r, err := newRegistry(system.Tools(), website.Tools(), certificate.Tools(), app.Tools(), database.Tools(), catalog.Tools())
 	if err != nil {
 		panic(err)
 	}

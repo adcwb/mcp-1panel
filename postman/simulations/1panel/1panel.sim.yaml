@@ -1,0 +1,6 @@
+simulation: 1panel-api-tools
+routing: path
+mocks:
+  - name: 1panel-files
+    routeKey: panel
+    path: postman/mocks/1panel-files/config.yaml

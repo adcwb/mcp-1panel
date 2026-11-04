@@ -1,0 +1,30 @@
+purpose:
+  stands_in_for: Two 1Panel file endpoints from doc.json, served locally without real file writes.
+  unblocks: Verify the real MCP endpoint handler and HTTP client on successful and uncertain writes.
+assumptions:
+  - id: file-create-and-check-contract
+    status: supported
+    claim: The supplied Swagger declares POST /files with a path and POST /files/check returning a boolean.
+    reason: Request definitions request.FileCreate and request.FilePathCheck and the API annotations define these shapes.
+    verification: Compared the supplied doc.json with the official file API handlers; live panel behavior is not tested.
+    source: doc.json; agent/app/api/v2/file.go in 1Panel-dev/1Panel; postman/mocks/1panel-files/default.js
+    updated_at: "2026-11-03"
+  - id: failed-write-can-commit
+    status: unknown
+    claim: A failed file-create response may follow a committed write on a real panel.
+    reason: A network or 5xx response cannot establish whether a mutation committed; the mock intentionally models that possibility.
+    verification: On 2026-11-03 TestEndpointPostmanSimulation passed against Postman CLI 1.75.0. The stand-in committed a file, returned 500, and a subsequent check returned true. This tests the caller under that model, not the real panel's failure timing.
+    source: internal/legacy/endpoint_simulation_test.go; postman/mocks/1panel-files/default.js
+    updated_at: "2026-11-03"
+  - id: caller-does-not-retry-uncertain-writes
+    status: supported
+    claim: In the tested simulation the MCP caller reports an uncertain write and does not submit it again.
+    reason: The real generated handler and HTTP transport returned UnknownWriteMessage; the simulation observed one create followed by one check for each scenario.
+    verification: TestEndpointPostmanSimulation passed on 2026-11-03. The request log contained exactly four requests with statuses 200, 200, 500, 200, including only two file creates. No requests were sent to a live panel.
+    source: internal/legacy/endpoint_simulation_test.go; postman/simulations/1panel/1panel.sim.yaml
+    updated_at: "2026-11-03"
+fingerprints:
+  - id: supplied-swagger
+    date: "2026-11-03"
+    commit: null
+    cli: "1.75.0"

@@ -284,7 +284,7 @@ func (h *handler) message(ctx context.Context, token string, raw json.RawMessage
 		}
 		tools := make([]*mcp.Tool, 0, len(catalog.Tools))
 		for _, tool := range catalog.Tools {
-			tools = append(tools, &mcp.Tool{Name: tool.ToolID, Description: tool.Description, InputSchema: tool.InputSchema, OutputSchema: shared.ToolOutputSchema(tool), Annotations: &mcp.ToolAnnotations{ReadOnlyHint: tool.ReadOnly}})
+			tools = append(tools, &mcp.Tool{Meta: shared.ToolMetadata(tool), Name: tool.ToolID, Description: tool.Description, InputSchema: tool.InputSchema, OutputSchema: shared.ToolOutputSchema(tool), Annotations: &mcp.ToolAnnotations{ReadOnlyHint: tool.ReadOnly}})
 		}
 		return rpcResult(request.ID, map[string]any{"tools": tools}), http.StatusOK
 	default:

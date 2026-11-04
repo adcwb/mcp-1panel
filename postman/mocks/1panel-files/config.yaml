@@ -1,0 +1,10 @@
+version: 1
+name: 1panel-files
+slug: 1panel-files
+protocol: http
+port: 47862
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

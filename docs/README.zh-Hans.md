@@ -2,8 +2,11 @@
 
 [English](../README.md) | [简体中文](README.zh-Hans.md)
 
-面向 1Panel v2 的 MCP 服务，提供节点、系统状态、网站、证书、应用和 MySQL 共 20 个共享工具。
+面向 1Panel v2 的 MCP 服务，按 Swagger 的 58 个分类提供 770 个 API 工具，并兼容原有 20 个便捷工具。
 独立模式使用官方 Go MCP SDK；托管模式接入 1Panel 的授权与审计体系。
+
+新增工具通过 `--access-level=full` 开放，详见[接口覆盖清单](api-coverage.md)和[使用说明](api-tools.md)。
+托管模式执行新增工具需要 Core/Agent 支持 endpoint-v1；本仓库仅包含 MCP 适配器。
 
 ## 选择接入模式
 
@@ -145,7 +148,7 @@ export MCP_AUTH_TOKEN='<separate strong random token>'
 | --- | --- |
 | `readonly` | 15 个查询、列表和状态工具 |
 | `readwrite` | 18 个工具，增加网站、证书和数据库创建 |
-| `full` | 全部 20 个工具，再增加 MySQL 和 OpenResty 安装 |
+| `full` | 共 790 个工具：原有 20 个便捷工具及全部 770 个 API 工具 |
 
 | 工具 | 最低级别 | 用途 |
 | --- | --- | --- |
@@ -175,7 +178,7 @@ export MCP_AUTH_TOKEN='<separate strong random token>'
 
 ## 节点选择与写入结果
 
-19 个业务工具接受可选的 `nodeId`，默认 `"local"`。
+业务工具接受可选的 `nodeId`，默认 `"local"`。
 以 `{}` 调用 `list_nodes` 获得 `"7"` 等子节点 ID，再传给业务工具，不能使用节点名称或 IP。
 独立模式在每次调用中将 ID 解析为当前名称，通过 `CurrentNode` 路由；本地调用不依赖发现。
 托管模式使用稳定 ID 路由，每个 API 步骤重新检查授权。两种模式都不会回退到主节点。

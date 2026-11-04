@@ -28,9 +28,21 @@ __debug*
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories
+# Local build output and caches (including downloaded audit sources)
 build
 logs
 .gocache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.log
+*.tmp
+
+# Local environment configuration
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Local planning notes
 docs/plan/
-*_test.go

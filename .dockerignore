@@ -5,3 +5,12 @@ logs
 .DS_Store
 .vscode
 .idea
+.gocache
+**/__pycache__
+**/*.py[cod]
+.pytest_cache
+**/*.log
+**/*.tmp
+.env
+.env.*
+docs/plan

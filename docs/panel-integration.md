@@ -5,7 +5,7 @@
 # 1Panel v2 MCP integration
 
 This guide covers deployment, authorization and the runtime contract. For downloads, source builds and
-client startup, see the [README](../README.md). Both modes share 20 tools, strict input schemas and
+client startup, see the [README](../README.md). Both modes retain 20 convenience tools, strict input schemas and
 result projections.
 
 | Mode | Authentication and execution | Deployment requirement |
@@ -23,7 +23,7 @@ if supported by the panel. The host/key configuration is immutable. Every reques
 proxies and ambient cookies are disabled. Tool arguments cannot change the host, credentials or headers.
 
 `readonly` exposes 15 query tools; `readwrite` exposes 18, adding website, certificate and database
-creation; `full` exposes all 20, adding MySQL/OpenResty installation. The adapter enforces this policy
+creation; `full` exposes 790 tools, adding MySQL/OpenResty installation and 770 API tools. The adapter enforces this policy
 on every listing and call, including direct calls to hidden tools. It cannot grant additional panel
 permissions. Every API request still follows the account's ordinary API Key and business rules. This
 mode does not acquire managed MCP grants, admission tickets, invocation audit, Agent snapshot semantics
@@ -126,7 +126,7 @@ resource allowlists. Arbitrary URLs, headers, SQL and owner identities cannot be
 invocation contract. Dedicated MCP tokens cannot authenticate ordinary public APIs or credential
 management; manage credentials through an authorized panel session.
 
-All 19 business tools accept optional `nodeId`, defaulting to `"local"` (primary). Child IDs are
+Business tools accept optional `nodeId`, defaulting to `"local"` (primary). Child IDs are
 positive decimal strings returned by `list_nodes`, such as `"7"`; names, IP addresses, empty strings,
 zero, leading zeroes and non-string values are invalid. `list_nodes` accepts `{}` and returns only safe
 metadata for visible nodes. Managed discovery requires its own tool grant and intersects the explicit
@@ -157,6 +157,11 @@ targets request scoped and remove `nodeId` from business DTOs; caller headers ca
 <a id="shared-tool-registration"></a>
 
 ## Tools and business boundaries
+
+This section describes the original 20 convenience tools. The additional 770 tools are grouped by
+58 Swagger tags; see [API coverage](api-coverage.md) and [endpoint-v1 semantics](api-tools.md).
+They require full access and an explicitly compatible Core for managed execution. Their authorized
+results can include secrets and are not subject to the convenience tools' field projection.
 
 `--catalog` emits an offline contract-v5 manifest. The shared registry in `internal/toolset` binds
 definitions and handlers; `shared` owns schemas, policy hashing and response projection. Categories
