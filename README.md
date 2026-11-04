@@ -88,7 +88,7 @@ Before publishing, configure **Settings → Secrets and variables → Actions**:
 | Setting | Value |
 | --- | --- |
 | Secret `DOCKER_USERNAME` | Docker Hub username with permission to push the image |
-| Secret `DOCKER_PASSWORD` | Docker Hub access token with write permission |
+| Secret `DOCKERHUB_TOKEN` | Docker Hub access token with write permission |
 | Optional variable `DOCKER_IMAGE` | Image repository; defaults to `adcwb/mcp-1panel` in both workflows |
 
 After validation, pushes/manual runs publish `linux/amd64` and `linux/arm64`
