@@ -78,7 +78,7 @@ Pull Request 时执行，也支持在 Actions 页面手动运行。流程检查 
 
 | 设置 | 内容 |
 | --- | --- |
-| Secret `DOCKER_USERNAME` | 有权推送镜像的 Docker Hub 用户名 |
+| Secret `DOCKERHUB_USERNAME` | 有权推送镜像的 Docker Hub 用户名 |
 | Secret `DOCKERHUB_TOKEN` | 具有写入权限的 Docker Hub Access Token |
 | 可选 Variable `DOCKER_IMAGE` | 镜像仓库名；两个工作流均默认为 `adcwb/mcp-1panel` |
 
