@@ -220,7 +220,8 @@ class DockerCommands(unittest.TestCase):
             if not line.endswith('\\'):
                 break
         command = ' '.join(selected).removeprefix('RUN ')
-        command = ' '.join(part for part in command.split(' ') if not part.startswith('--mount='))
+        command = ' '.join(part for part in command.split(' ')
+                           if not part.startswith(('--mount=', '--network=')))
         build_output = self.root / 'cross-output'
         command = command.replace('/out', str(build_output))
         fake_go = self.bin / 'go'

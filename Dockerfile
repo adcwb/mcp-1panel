@@ -14,6 +14,7 @@ ARG TARGETVARIANT
 ARG VERSION
 # Build on the builder's native platform and reuse the Linux binary builder.
 RUN --mount=type=cache,target=/root/.cache/go-build \
+    --network=none \
     set -eu; \
     sh scripts/validate-version.sh "$VERSION"; \
     test "$TARGETOS" = linux; \

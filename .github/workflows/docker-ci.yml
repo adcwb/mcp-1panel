@@ -97,11 +97,22 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # A fresh builder has no cache mounts. The arm64 compile must work using
-      # only exported layers, catching missing offline Go dependencies.
+      # A fresh builder has no cache mounts. Change VERSION to force compilation
+      # from exported layers; the Dockerfile disables networking for compilation.
       - name: Set up fresh builder to verify exported cache
         id: publish-builder
         uses: docker/setup-buildx-action@v4
+
+      - name: Verify offline build from exported cache
+        uses: docker/build-push-action@v7
+        with:
+          builder: ${{ steps.publish-builder.outputs.name }}
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: mcp-1panel:cache-test
+          build-args: VERSION=v0.0.0-cache.${{ github.sha }}
+          cache-from: type=local,src=${{ runner.temp }}/docker-test-cache
 
       # PRs build both platforms without credentials or publishing. Branch and
       # manual runs publish only after the default-command runtime test passes.
