@@ -3,7 +3,9 @@ FROM --platform=$BUILDPLATFORM golang:1.27.3 AS build
 WORKDIR /build
 
 COPY go.mod go.sum ./
-RUN --mount=type=cache,target=/go/pkg/mod go mod download
+# Keep dependencies in the layer: external BuildKit caches do not preserve
+# cache mounts, and build-linux.sh intentionally compiles with GOPROXY=off.
+RUN go mod download
 COPY . ./
 
 ARG TARGETOS
@@ -11,8 +13,7 @@ ARG TARGETARCH
 ARG TARGETVARIANT
 ARG VERSION
 # Build on the builder's native platform and reuse the Linux binary builder.
-RUN --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
+RUN --mount=type=cache,target=/root/.cache/go-build \
     set -eu; \
     sh scripts/validate-version.sh "$VERSION"; \
     test "$TARGETOS" = linux; \

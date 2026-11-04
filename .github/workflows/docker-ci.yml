@@ -72,6 +72,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: VERSION=${{ env.CI_VERSION }}
           cache-from: type=gha,scope=docker-ci
+          cache-to: type=local,dest=${{ runner.temp }}/docker-test-cache,mode=max
 
       - name: Verify the image exposes all 790 tools by default
         env:
@@ -96,16 +97,25 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # A fresh builder has no cache mounts. The arm64 compile must work using
+      # only exported layers, catching missing offline Go dependencies.
+      - name: Set up fresh builder to verify exported cache
+        id: publish-builder
+        uses: docker/setup-buildx-action@v4
+
       # PRs build both platforms without credentials or publishing. Branch and
       # manual runs publish only after the default-command runtime test passes.
       - name: Build multi-platform image
         uses: docker/build-push-action@v7
         with:
+          builder: ${{ steps.publish-builder.outputs.name }}
           context: .
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: VERSION=${{ env.CI_VERSION }}
-          cache-from: type=gha,scope=docker-ci
+          cache-from: |
+            type=local,src=${{ runner.temp }}/docker-test-cache
+            type=gha,scope=docker-ci
           cache-to: type=gha,scope=docker-ci,mode=max
