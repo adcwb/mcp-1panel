@@ -83,8 +83,10 @@ Pull Request 时执行，也支持在 Actions 页面手动运行。流程检查 
 | 可选 Variable `DOCKER_IMAGE` | 镜像仓库名；两个工作流均默认为 `adcwb/mcp-1panel` |
 
 验证通过后，推送或手动运行会发布 `linux/amd64`、`linux/arm64` 两种架构，标签为分支名（如 `dev-v2`）
-和 `sha-<完整提交 SHA>`。Pull Request 只构建、不发布。CI 内嵌版本号为 `v0.0.0-ci.<提交 SHA>`；
-`latest` 继续由 Release 工作流管理，Release 构建仍覆盖七种架构。
+和 `sha-<完整提交 SHA>`。默认分支（当前为 `dev-v2`）成功构建时还会发布 `latest`，
+包括在该分支手动运行。其他分支不更新 `latest`；Pull Request 只构建、不发布。
+CI 内嵌版本号为 `v0.0.0-ci.<提交 SHA>`。正式 Release 也会更新 `latest`，并继续构建七种架构；
+需要固定某次构建时，请使用 SHA 或 Release 标签。
 
 工作流成功发布后，可由 MCP 客户端执行：
 

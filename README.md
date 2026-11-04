@@ -93,9 +93,11 @@ Before publishing, configure **Settings → Secrets and variables → Actions**:
 
 After validation, pushes/manual runs publish `linux/amd64` and `linux/arm64`
 images to Docker Hub with the branch tag (for example `dev-v2`) and
-`sha-<full-commit-SHA>`. Pull requests build both platforms without publishing.
-CI versions are `v0.0.0-ci.<commit-SHA>`; CI does not update `latest`, which remains
-controlled by the Release workflow. The Release workflow still builds seven architectures.
+`sha-<full-commit-SHA>`. Successful builds of the default branch (`dev-v2`) also
+publish `latest`, including manual runs on that branch. Other branches and pull
+requests do not update `latest`; pull requests build both platforms without publishing.
+CI versions are `v0.0.0-ci.<commit-SHA>`. Stable Releases also update `latest` and
+still build seven architectures; use a SHA or release tag to pin a particular build.
 
 Once the workflow has published successfully, an MCP client can start the image:
 
