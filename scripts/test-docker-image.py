@@ -119,12 +119,12 @@ class DockerCommands(unittest.TestCase):
                                  '--tag', 'example/mcp:1.2.3', str(REPO)])
                 self.assertNotIn('--push', self.calls()[-1])
 
-    def test_dockerfile_keeps_entrypoint_and_legacy_defaults(self):
+    def test_dockerfile_defaults_to_full_access_stdio(self):
         lines = (REPO / 'Dockerfile').read_text().splitlines()
         entrypoint = next(line.removeprefix('ENTRYPOINT ') for line in lines if line.startswith('ENTRYPOINT '))
         command = next(line.removeprefix('CMD ') for line in lines if line.startswith('CMD '))
         self.assertEqual(json.loads(entrypoint), ['/usr/local/bin/mcp-1panel'])
-        self.assertEqual(json.loads(command), ['--mode=legacy', '--transport=stdio'])
+        self.assertEqual(json.loads(command), ['--mode=legacy', '--transport=stdio', '--access-level=full'])
         self.assertTrue(any('COPY --from=build' in line and '/usr/local/bin/mcp-1panel' in line for line in lines))
 
     def test_go_module_docker_and_release_toolchains_match(self):

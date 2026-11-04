@@ -33,4 +33,4 @@ LABEL org.opencontainers.image.title="1Panel MCP Server" \
       org.opencontainers.image.version="$VERSION"
 COPY --from=build --chmod=0755 /out/mcp-1panel /usr/local/bin/mcp-1panel
 ENTRYPOINT ["/usr/local/bin/mcp-1panel"]
-CMD ["--mode=legacy", "--transport=stdio"]
+CMD ["--mode=legacy", "--transport=stdio", "--access-level=full"]

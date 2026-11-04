@@ -72,8 +72,43 @@ provides the version; prereleases and tags containing `-` do not update Docker `
 
 ### Docker
 
-The image defaults to independent stdio mode. To build and export a fixed version
-locally (these commands do not publish an image):
+The image defaults to `--mode=legacy --transport=stdio --access-level=full`,
+exposing all **790 tools**. An explicit command after the image name replaces these
+defaults; include `--access-level=full` when supplying a custom command.
+
+The [Docker CI workflow](.github/workflows/docker-ci.yml) runs on pushes and pull
+requests to `dev-v2`, `main` and `master`, and can be run manually from Actions.
+It checks the API catalog, runs Go and Docker build-script tests, builds an amd64
+image, then starts it with its default command and verifies all 790 tools through
+paginated MCP `tools/list`. It also checks that a readonly override exposes 15 tools.
+The test container uses a placeholder key and has networking disabled.
+
+Before publishing, configure **Settings → Secrets and variables → Actions**:
+
+| Setting | Value |
+| --- | --- |
+| Secret `DOCKER_USERNAME` | Docker Hub username with permission to push the image |
+| Secret `DOCKER_PASSWORD` | Docker Hub access token with write permission |
+| Optional variable `DOCKER_IMAGE` | Image repository; defaults to `adcwb/mcp-1panel` in both workflows |
+
+After validation, pushes/manual runs publish `linux/amd64` and `linux/arm64`
+images to Docker Hub with the branch tag (for example `dev-v2`) and
+`sha-<full-commit-SHA>`. Pull requests build both platforms without publishing.
+CI versions are `v0.0.0-ci.<commit-SHA>`; CI does not update `latest`, which remains
+controlled by the Release workflow. The Release workflow still builds seven architectures.
+
+Once the workflow has published successfully, an MCP client can start the image:
+
+```sh
+docker run -i --rm -e PANEL_HOST -e PANEL_ACCESS_TOKEN adcwb/mcp-1panel:dev-v2
+```
+
+Set `PANEL_HOST` and `PANEL_ACCESS_TOKEN` in the client's environment. For a fixed
+build, use its `sha-...` tag. These credentials are runtime settings, not CI secrets
+or image build arguments. The tools' panel permissions and version requirements
+still apply; see [API compatibility](docs/api-tools.md).
+
+To build and export a fixed version locally (these commands do not publish an image):
 
 ```sh
 make docker_build VERSION=v2.0.0-rc1 DOCKER_PLATFORM=linux/amd64
@@ -83,7 +118,9 @@ docker load -i build/mcp-1panel-linux-amd64-v2.0.0-rc1.tar
 ```
 
 Choose your own fixed version; the example tag is not a publication claim.
-The official repository is `1panel/mcp-server`. Docker builds support
+This repository's workflows publish to `adcwb/mcp-1panel` by default. Local `make`
+commands still default to `1panel/mcp-server`; set `DOCKER_IMAGE=adcwb/mcp-1panel`
+to use the same name locally. Docker builds support
 `linux/386`, `linux/amd64`, `linux/arm64`, `linux/arm/v7`, `linux/s390x`, `linux/ppc64le` and
 `linux/riscv64`. For managed installation, use the panel's installation dialog and
 [container contract](docs/panel-integration.md#container-and-socket-contract).
@@ -116,8 +153,7 @@ same environment variables; the panel URL must be reachable from the container:
 
 ```sh
 docker run -i --rm -e PANEL_HOST -e PANEL_ACCESS_TOKEN \
-  1panel/mcp-server:v2.0.0-rc1 \
-  --mode=legacy --transport=stdio --access-level=readonly
+  adcwb/mcp-1panel:dev-v2
 ```
 
 Use an image you built/imported or an actually published tag. Container `localhost`
@@ -153,7 +189,8 @@ This is pre-shared authentication, not an MCP OAuth flow.
 
 ## Access levels and tools
 
-Independent mode defaults to `readonly`. `--access-level` / `MCP_ACCESS_LEVEL`
+The binary defaults to `readonly`; the Docker image's default command selects `full`.
+`--access-level` / `MCP_ACCESS_LEVEL`
 controls both listing and execution, including direct calls to hidden tools.
 It restricts the configured Key and cannot add panel permissions. Managed mode
 uses Core grants instead of this option.

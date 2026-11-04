@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE_NAME: 1panel/mcp-server
+  IMAGE_NAME: ${{ vars.DOCKER_IMAGE || 'adcwb/mcp-1panel' }}
 
 jobs:
   build:

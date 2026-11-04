@@ -66,7 +66,37 @@ chmod +x ./mcp-1panel-linux-amd64
 
 ### Docker
 
-镜像默认运行独立 stdio 模式。本机构建并导出固定版本（不会发布镜像）：
+镜像默认以 `--mode=legacy --transport=stdio --access-level=full` 启动，开放全部 **790 个工具**。
+在镜像名后指定命令会替换默认参数；自定义启动命令时需显式保留 `--access-level=full`。
+
+[Docker CI 工作流](../.github/workflows/docker-ci.yml) 在向 `dev-v2`、`main`、`master` 推送代码或提交
+Pull Request 时执行，也支持在 Actions 页面手动运行。流程检查 API 目录、运行 Go 和 Docker 构建脚本测试，
+然后构建 amd64 镜像并按默认命令启动，通过 MCP `tools/list` 的全部分页确认 790 个工具可见，
+同时验证显式 readonly 配置仅开放 15 个工具。验收容器使用占位密钥并关闭网络，不连接实际面板。
+
+首次发布前，在 **Settings → Secrets and variables → Actions** 配置：
+
+| 设置 | 内容 |
+| --- | --- |
+| Secret `DOCKER_USERNAME` | 有权推送镜像的 Docker Hub 用户名 |
+| Secret `DOCKER_PASSWORD` | 具有写入权限的 Docker Hub Access Token |
+| 可选 Variable `DOCKER_IMAGE` | 镜像仓库名；两个工作流均默认为 `adcwb/mcp-1panel` |
+
+验证通过后，推送或手动运行会发布 `linux/amd64`、`linux/arm64` 两种架构，标签为分支名（如 `dev-v2`）
+和 `sha-<完整提交 SHA>`。Pull Request 只构建、不发布。CI 内嵌版本号为 `v0.0.0-ci.<提交 SHA>`；
+`latest` 继续由 Release 工作流管理，Release 构建仍覆盖七种架构。
+
+工作流成功发布后，可由 MCP 客户端执行：
+
+```sh
+docker run -i --rm -e PANEL_HOST -e PANEL_ACCESS_TOKEN adcwb/mcp-1panel:dev-v2
+```
+
+在客户端环境中设置 `PANEL_HOST` 和 `PANEL_ACCESS_TOKEN`。需要固定构建时使用 `sha-...` 标签。
+面板密钥属于运行时配置，不写入镜像或 CI 构建参数。开放工具仍受实际面板权限和版本约束，
+详见 [API 兼容性说明](api-tools.md)。
+
+本机构建并导出固定版本（不会发布镜像）：
 
 ```sh
 make docker_build VERSION=v2.0.0-rc1 DOCKER_PLATFORM=linux/amd64
@@ -76,7 +106,8 @@ docker load -i build/mcp-1panel-linux-amd64-v2.0.0-rc1.tar
 ```
 
 请选择实际使用的固定版本；示例标签不代表已发布。
-官方仓库为 `1panel/mcp-server`，Docker 构建支持 `linux/386`、`linux/amd64`、`linux/arm64`、
+本仓库工作流默认发布到 `adcwb/mcp-1panel`。本地 `make` 命令仍默认使用 `1panel/mcp-server`，
+可通过 `DOCKER_IMAGE=adcwb/mcp-1panel` 指定相同名称。Docker 构建支持 `linux/386`、`linux/amd64`、`linux/arm64`、
 `linux/arm/v7`、`linux/s390x`、`linux/ppc64le` 和 `linux/riscv64`。
 托管模式通过面板安装，详见[容器契约](panel-integration.zh-Hans.md#container-and-socket-contract)。
 
@@ -107,8 +138,7 @@ stdio 不监听端口，由客户端管理时无需另行启动服务进程。
 
 ```sh
 docker run -i --rm -e PANEL_HOST -e PANEL_ACCESS_TOKEN \
-  1panel/mcp-server:v2.0.0-rc1 \
-  --mode=legacy --transport=stdio --access-level=readonly
+  adcwb/mcp-1panel:dev-v2
 ```
 
 使用已构建/导入的镜像或实际发布的标签。容器内 `localhost` 不代表 Docker 宿主机。
@@ -140,7 +170,8 @@ export MCP_AUTH_TOKEN='<separate strong random token>'
 
 ## 访问级别与工具
 
-独立模式默认 `readonly`，通过 `--access-level` / `MCP_ACCESS_LEVEL` 同时控制列举和执行，
+二进制默认 `readonly`；Docker 镜像的默认启动命令选择 `full`。
+通过 `--access-level` / `MCP_ACCESS_LEVEL` 同时控制列举和执行，
 直接调用隐藏工具也会检查。本地级别只能收窄已配置 Key 的能力，不能增加面板权限。
 托管模式使用 Core 授权，不使用此选项。
 
